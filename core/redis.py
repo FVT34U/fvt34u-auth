@@ -1,16 +1,43 @@
 from redis.asyncio import Redis, ConnectionPool
 from core import settings
-
-# TODO: rewite with class
-_redis_pool: ConnectionPool | None = None
+import logging
 
 
-def get_redis_pool() -> ConnectionPool:
-    global _redis_pool
-    if _redis_pool is None:
-        _redis_pool = ConnectionPool.from_url(
+logger = logging.getLogger(__name__)
+
+
+class RedisPoolManager:
+    def __init__(self):
+        self._redis_pool: ConnectionPool | None = None
+
+    async def start(self):
+        self._redis_pool = ConnectionPool.from_url(
             settings.REDIS_URL,
             max_connections=20,
             decode_responses=True,
         )
-    return _redis_pool
+
+        logger.info("Redis pool started")
+    
+    async def stop(self):
+        if self._redis_pool:
+            self._redis_pool.aclose()
+            self._redis_pool = None
+
+            logger.info("Redis pool closed")
+
+    def get_redis_pool(self) -> ConnectionPool:
+        if self._redis_pool is None:
+            raise RuntimeError(
+                "RedisPoolManager not started "
+                "Call start() in lifespan method."
+            )
+        return self._redis_pool
+
+    @property
+    def is_running(self) -> bool:
+        return self._redis_pool is not None
+
+
+redis_pool_manager = RedisPoolManager()
+

@@ -25,14 +25,17 @@ class KafkaProducerManager:
             self._producer = None
             logger.info("Kafka producer stopped")
 
-    async def publish(self, topic: str, value: dict) -> None:
+    def get_producer(self) -> AIOKafkaProducer:
         if not self._producer:
-            raise RuntimeError("Kafka producer не запущен")
-        await self._producer.send_and_wait(topic, value)
+            raise RuntimeError(
+                "KafkaProducerManager not started "
+                "Call start() in lifespan method."
+            )
+        return self._producer
 
     @property
     def is_running(self) -> bool:
         return self._producer is not None
 
 
-kafka_producer = KafkaProducerManager()
+kafka_producer_manager = KafkaProducerManager()
