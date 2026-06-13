@@ -31,16 +31,16 @@ class AsyncSessionManager:
         if self._engine:
             await self._engine.dispose()
             self._engine = None
-            self._session_factory = None
+            self._async_session_factory = None
             logger.info("Database connection closed")
     
     def get_session(self) -> AsyncSession:
-        if not self._session_factory:
+        if not self._async_session_factory:
             raise RuntimeError(
                 "AsyncSessionManager not started "
                 "Call start() in lifespan method."
             )
-        return self._session_factory()
+        return self._async_session_factory()
     
     @property
     def is_running(self) -> bool:
