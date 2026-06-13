@@ -21,7 +21,7 @@ class RedisPoolManager:
     
     async def stop(self):
         if self._redis_pool:
-            self._redis_pool.aclose()
+            await self._redis_pool.aclose()
             self._redis_pool = None
 
             logger.info("Redis pool closed")
